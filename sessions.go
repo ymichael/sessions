@@ -1,11 +1,14 @@
 package sessions
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/zenazn/goji/web"
 )
+
+var SessionIdNotFound = errors.New("Session Id Not Found.")
 
 // Configuration Options for Sessions.
 type SessionOptions struct {
@@ -35,13 +38,11 @@ func (s SessionOptions) RetrieveOrCreateSession(c *web.C, r *http.Request) {
 	var sessionObj map[string]interface{}
 	// If cookie is set, retrieve session and set on context.
 	// Otherwise, create new session.
-	cookie, err := r.Cookie(s.Name)
-	if err == http.ErrNoCookie {
+	sessionId, err := s.GetValueFromCookie(r)
+	if err != nil {
 		s.CreateNewSession(c)
 		return
-
 	}
-	sessionId = cookie.Value
 	sessionObj, err = s.Store.Get(sessionId)
 	if err != nil {
 		sessionObj = make(map[string]interface{})
@@ -56,9 +57,23 @@ func (s SessionOptions) CreateNewSession(c *web.C) {
 	c.Env[s.ObjEnvKey] = make(map[string]interface{})
 }
 
+// Get session id from request cookie. Returns SessionIdNotFound error if not found.
+func (s SessionOptions) GetValueFromCookie(r *http.Request) (string, error) {
+	cookie, err := r.Cookie(s.Name)
+	if err != nil {
+		return "", SessionIdNotFound
+	}
+	val, err := UnsignMessage(cookie.Value, s.Secret)
+	if err != nil {
+		return "", SessionIdNotFound
+	}
+	return val, nil
+}
+
 // Set session cookie on response.
 func (s SessionOptions) SetCookie(c *web.C, w http.ResponseWriter) {
-	cookie := NewCookie(s.Name, s.GetSessionId(c), s.CookieOptions)
+	val := SignMessage(s.GetSessionId(c), s.Secret)
+	cookie := NewCookie(s.Name, val, s.CookieOptions)
 	http.SetCookie(w, cookie)
 }
 
@@ -68,6 +83,10 @@ func (s SessionOptions) RemoveCookie(c *web.C, w http.ResponseWriter) {
 }
 
 func (s SessionOptions) UpdateCookie(c *web.C, w http.ResponseWriter, value string, maxAge int) {
+	// TODO: Refactor Set,Remove,Update Cookie to use one codepath.
+	// Sign cookie value.
+	value = SignMessage(value, s.Secret)
+
 	// Find cookie in w.Header()
 	h := w.Header()
 	for idx, line := range h["Set-Cookie"] {

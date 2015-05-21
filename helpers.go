@@ -2,12 +2,18 @@ package sessions
 
 import (
 	"bufio"
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 )
+
+var InvalidMessageError = errors.New("Invalid Message.")
+var seperator = "."
 
 // Generates random string of length n
 func GenerateRandomString(n int) string {
@@ -17,6 +23,33 @@ func GenerateRandomString(n int) string {
 		panic(err)
 	}
 	return hex.EncodeToString(b)
+}
+
+func GetSignature(message, secret string) string {
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(message))
+	return hex.EncodeToString(mac.Sum(nil))
+}
+
+// Returns <message>.<signature>
+func SignMessage(message, secret string) string {
+	return message + seperator + GetSignature(message, secret)
+}
+
+// Returns unsigned message.
+// If signed message is invalid, returns InvalidMessageError
+func UnsignMessage(signedMessage, secret string) (string, error) {
+	parts := strings.Split(signedMessage, seperator)
+	if len(parts) != 2 {
+		return "", InvalidMessageError
+	}
+	message := parts[0]
+	signature := parts[1]
+	expectedSignature := GetSignature(message, secret)
+	if !hmac.Equal([]byte(expectedSignature), []byte(signature)) {
+		return "", InvalidMessageError
+	}
+	return message, nil
 }
 
 // Reverse http.Cookie.String(),
