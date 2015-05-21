@@ -5,12 +5,10 @@ import (
 	"time"
 )
 
-/**
- * Options used to create http.Cookie
- */
+// Options used to create http.Cookie
 type CookieOptions struct {
 	Path     string
-	MaxAge   int  // Setting to less then 0 deletes cookie
+	MaxAge   int  // Setting to less than 0 deletes cookie
 	HttpOnly bool // Prevents JavaScript access to cookies
 	Secure   bool // Cookie wil only be transmitted over SSL/TLS.
 }

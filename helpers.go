@@ -9,9 +9,7 @@ import (
 	"strings"
 )
 
-/**
- * Generates random string of length n
- */
+// Generates random string of length n
 func GenerateRandomString(n int) string {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
@@ -21,10 +19,8 @@ func GenerateRandomString(n int) string {
 	return hex.EncodeToString(b)
 }
 
-/**
- * Reverse http.Cookie.String(),
- * Taken from: http://play.golang.org/p/YkW_z2CSyE
- */
+// Reverse http.Cookie.String(),
+// Taken from: http://play.golang.org/p/YkW_z2CSyE
 func CookieFromString(line string) (*http.Cookie, error) {
 	req, err := http.ReadRequest(bufio.NewReader(strings.NewReader(fmt.Sprintf("GET / HTTP/1.0\r\nCookie: %s\r\n\r\n", line))))
 	if err != nil {

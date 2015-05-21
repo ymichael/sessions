@@ -10,12 +10,11 @@ import (
 )
 
 var (
-	// Sessions = sessions.NewSessionOptions(
-	// 	"thisismysecret.",
-	// 	&sessions.MemoryStore{})
-	Sessions = sessions.NewSessionOptions(
-		"thisismysecret.",
-		sessions.NewRedisStore("tcp", "localhost:6379"))
+	secret               = "thisismysecret"
+	inMemorySessionStore = sessions.MemoryStore{}
+	// Sessions             = sessions.NewSessionOptions(secret, &inMemorySessionStore)
+	redisSessionStore = sessions.NewRedisStore("tcp", "localhost:6379")
+	Sessions          = sessions.NewSessionOptions(secret, redisSessionStore)
 )
 
 func hello(c web.C, w http.ResponseWriter, r *http.Request) {
