@@ -6,6 +6,10 @@ Simple server-side sessions for [goji](goji.io).
 goji.Use(Sessions.Middleware())
 ```
 
+## Dependencies
+- [github.com/fzzy/radix](https://github.com/fzzy/radix) _If using RedisStore_.
+
+
 ## Usage
 In-memory session store:
 
@@ -33,7 +37,7 @@ Accessing session variable:
 ```go
 func handler(c web.C, w http.ResponseWriter, r *http.Request) {
     sessionObj := Sessions.GetSessionObject(&c)
-    
+
     // Regnerate session..
     Sessions.RegenerateSession(&c)
 
