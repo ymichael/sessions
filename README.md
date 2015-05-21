@@ -1,6 +1,6 @@
-# Sessions Middleware
+# Sessions
 
-Simple server-side sessions for [goji][goji.io].
+Simple server-side sessions for [goji](goji.io).
 
     goji.Use(Sessions.Middleware())
 
@@ -33,5 +33,3 @@ Accessing session variable:
     }
 
 See examples folder for full example.
-
-
