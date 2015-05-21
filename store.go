@@ -4,7 +4,6 @@ import "errors"
 
 var (
 	NotFoundError = errors.New("Session Object Not Found.")
-	SaveError     = errors.New("Error Saving Session Object.")
 )
 
 type Store interface {
@@ -17,7 +16,12 @@ type Store interface {
 	/**
 	 * Persists the session object to the store.
 	 */
-	Save(key string, object map[string]interface{}) error
+	Save(key string, object map[string]interface{})
+
+	/**
+	 * Remove session object from the store.
+	 */
+	Destroy(key string)
 }
 
 /**
@@ -33,7 +37,12 @@ func (m MemoryStore) Get(key string) (map[string]interface{}, error) {
 	}
 }
 
-func (m MemoryStore) Save(key string, object map[string]interface{}) error {
+func (m MemoryStore) Save(key string, object map[string]interface{}) {
 	m[key] = object
-	return nil
+}
+
+func (m MemoryStore) Destroy(key string) {
+	if _, ok := m[key]; ok {
+		delete(m, key)
+	}
 }

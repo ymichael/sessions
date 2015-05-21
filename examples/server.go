@@ -10,11 +10,17 @@ import (
 )
 
 var (
-	Sessions = sessions.NewSessionOptions("thisismysecret.", &sessions.MemoryStore{})
+	// Sessions = sessions.NewSessionOptions(
+	// 	"thisismysecret.",
+	// 	&sessions.MemoryStore{})
+	Sessions = sessions.NewSessionOptions(
+		"thisismysecret.",
+		sessions.NewRedisStore("tcp", "localhost:6379"))
 )
 
 func hello(c web.C, w http.ResponseWriter, r *http.Request) {
 	x := Sessions.GetSessionObject(&c)
+	fmt.Println(x)
 	if val, ok := x["count"]; ok {
 		x["count"] = val.(int) + 1
 	} else {
@@ -24,8 +30,8 @@ func hello(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 func destroy(c web.C, w http.ResponseWriter, r *http.Request) {
-	Sessions.DestroySession(&c, w)
-	http.Redirect(w, r, "/", 301)
+	Sessions.RegenerateSession(&c, w)
+	http.Redirect(w, r, "/", 302)
 }
 
 func main() {
