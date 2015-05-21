@@ -14,7 +14,7 @@ var (
 )
 
 func hello(c web.C, w http.ResponseWriter, r *http.Request) {
-	x := Sessions.GetSession(&c)
+	x := Sessions.GetSessionObject(&c)
 	if val, ok := x["count"]; ok {
 		x["count"] = val.(int) + 1
 	} else {
@@ -23,8 +23,14 @@ func hello(c web.C, w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, %d!", x["count"])
 }
 
+func destroy(c web.C, w http.ResponseWriter, r *http.Request) {
+	Sessions.DestroySession(&c, w)
+	http.Redirect(w, r, "/", 301)
+}
+
 func main() {
 	goji.Use(Sessions.Middleware())
 	goji.Get("/", hello)
+	goji.Get("/destroy", destroy)
 	goji.Serve()
 }
